@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <rect width="600" height="400" fill="#112250"/>
+  <rect x="20" y="20" width="560" height="360" rx="12" fill="#3C507D" stroke="#E0C58F" stroke-width="3"/>
+  <circle cx="300" cy="160" r="50" fill="#E0C58F" opacity="0.9"/>
+  <path d="M280 160 L300 135 L320 160 Z" fill="#112250"/>
+  <rect x="296" y="155" width="8" height="25" fill="#112250"/>
+  <text x="300" y="250" font-family="sans-serif" font-size="22" font-weight="bold" fill="#F5F0E9" text-anchor="middle">
+    SIGIU - Municipio de Oaxaca de Juárez
+  </text>
+  <text x="300" y="280" font-family="sans-serif" font-size="15" fill="#E0C58F" text-anchor="middle">
+    Evidencia Fotográfica de Incidencia Urbana Registrada
+  </text>
+  <text x="300" y="310" font-family="sans-serif" font-size="13" fill="#D9CBC2" text-anchor="middle">
+    Coordenadas GPS WGS84: 17.0605° N, 96.7256° W
+  </text>
+</svg>

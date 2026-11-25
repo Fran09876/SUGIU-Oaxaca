@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background-color: #D0D4D7; /* Lotus White */
+  color: #151719; /* Charcoal Dark */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbars matching the new Slate Gray / Charcoal palette */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #D0D4D7;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #7D8181;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3F4B48;
+}
+
+/* Custom map marker & radar animations */
+@keyframes pulseGps {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(63, 75, 72, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 15px rgba(63, 75, 72, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(63, 75, 72, 0);
+  }
+}
+
+.gps-radar-pulse {
+  animation: pulseGps 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+/* Leaflet Cluster Styles */
+.custom-cluster-icon {
+  background: #151719;
+  color: #D0D4D7;
+  border: 2px solid #7D8181;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  box-shadow: 0 4px 14px rgba(21, 23, 25, 0.45);
+}

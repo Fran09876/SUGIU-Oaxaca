@@ -1,0 +1,15 @@
+{
+  "name": "sigiu-oaxaca-monorepo",
+  "version": "1.0.0",
+  "description": "Sistema Integral de Gestión de Incidencias Urbanas (SIGIU) - Municipio de Oaxaca de Juárez",
+  "scripts": {
+    "server": "npm --prefix server start",
+    "server:dev": "npm --prefix server run dev",
+    "server:test": "npm --prefix server test",
+    "client": "npm --prefix client run dev",
+    "client:build": "npm --prefix client run build",
+    "seed": "npm --prefix server run seed"
+  },
+  "author": "José Francisco Pérez Pérez (ITO)",
+  "license": "MIT"
+}

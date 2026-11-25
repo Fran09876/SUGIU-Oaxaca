@@ -1,0 +1,165 @@
+@startuml SIGIU_Diagramas_UML
+
+' ==============================================================================
+' SIGIU: Sistema Integral de Gestión de Incidencias Urbanas
+' Municipio de Oaxaca de Juárez - Dirección de Obras Públicas y Desarrollo Urbano
+' Modelos UML en PlantUML (Formato Editable)
+' ==============================================================================
+
+' ------------------------------------------------------------------------------
+' 1. DIAGRAMA DE ACTORES Y CASOS DE USO PRINCIPALES
+' ------------------------------------------------------------------------------
+package "SIGIU: Casos de Uso" {
+    actor "Ciudadano" as User
+    actor "Operador de Dependencia" as Operator
+    actor "Personal de Cuadrilla" as Crew
+    actor "Administrador Central" as Admin
+
+    usecase "Registrar Cuenta Ciudadana" as UC01
+    usecase "Reportar Incidencia con GPS y Foto" as UC02
+    usecase "Consultar Muro Comunitario" as UC03
+    usecase "Apoyar Incidencia ('A mí también me afecta')" as UC04
+    usecase "Rastrear Folio y Línea de Tiempo" as UC05
+    usecase "Consultar Mapa Geoespacial GIS" as UC06
+
+    usecase "Validar Incidencia Entrante" as UC07
+    usecase "Generar y Despachar Orden de Trabajo" as UC08
+    usecase "Filtrar Incidencias por Dependencia y SLA" as UC09
+
+    usecase "Consultar Órdenes Asignadas en Campo" as UC10
+    usecase "Iniciar Reparación ('En Proceso')" as UC11
+    usecase "Registrar Bitácora y Foto de Resolución" as UC12
+
+    usecase "Supervisar y Aprobar Cierre Definitivo" as UC13
+    usecase "Monitorear Analítica y Rendición de Cuentas" as UC14
+    usecase "Gestionar Usuarios y Roles" as UC15
+    usecase "Gestionar Catálogos de Dependencias y Categorías" as UC16
+
+    User --> UC01
+    User --> UC02
+    User --> UC03
+    User --> UC04
+    User --> UC05
+    User --> UC06
+
+    Operator --> UC07
+    Operator --> UC08
+    Operator --> UC09
+    Operator --> UC06
+
+    Crew --> UC10
+    Crew --> UC11
+    Crew --> UC12
+
+    Admin --> UC13
+    Admin --> UC14
+    Admin --> UC15
+    Admin --> UC16
+    Admin --> UC08
+}
+
+' ------------------------------------------------------------------------------
+' 2. DIAGRAMA DE CLASES DEL BACKEND (MODELOS SEQUELIZE)
+' ------------------------------------------------------------------------------
+package "Modelos Relacionales (Sequelize ORM)" {
+    class Role {
+        +Integer id
+        +String nombre
+        +String descripcion
+    }
+
+    class Department {
+        +Integer id
+        +String nombre
+        +String siglas
+        +String titular
+        +String telefono
+        +String direccion
+    }
+
+    class User {
+        +UUID id
+        +Integer rol_id
+        +Integer dependencia_id
+        +String nombre
+        +String email
+        +String password_hash
+        +String telefono
+        +String colonia
+        +Boolean estatus
+        +validarPassword(password)
+    }
+
+    class Category {
+        +Integer id
+        +Integer dependencia_id
+        +String nombre
+        +String descripcion
+        +String icono
+        +String color_hex
+        +Integer dias_horas_atencion
+    }
+
+    class ReportStatus {
+        +Integer id
+        +String nombre
+        +String descripcion
+        +String color_hex
+        +Integer orden
+    }
+
+    class Report {
+        +UUID id
+        +String folio
+        +UUID ciudadano_id
+        +Integer categoria_id
+        +Integer estado_actual_id
+        +UUID cuadrilla_asignada_id
+        +String titulo
+        +Text descripcion
+        +String prioridad
+        +Decimal latitud
+        +Decimal longitud
+        +JSON ubicacion_geografica
+        +String colonia
+        +Integer votos_apoyo
+    }
+
+    class ReportEvidence {
+        +UUID id
+        +UUID reporte_id
+        +String url_imagen
+        +String nombre_archivo
+        +String mimetype
+        +Integer tamano_bytes
+        +String tipo
+    }
+
+    class WorkOrder {
+        +UUID id
+        +String folio_orden
+        +UUID reporte_id
+        +UUID operador_id
+        +UUID cuadrilla_id
+        +Text instrucciones
+        +String estatus_orden
+        +DateTime fecha_limite
+        +Text observaciones_cuadrilla
+        +String foto_resolucion
+        +DateTime fecha_inicio
+        +DateTime fecha_cierre
+    }
+
+    Role "1" -- "0..*" User : rol
+    Department "1" -- "0..*" User : dependencia
+    Department "1" -- "0..*" Category : categorias
+    Category "1" -- "0..*" Report : categoria
+    ReportStatus "1" -- "0..*" Report : estado
+    User "1" -- "0..*" Report : ciudadano
+    Report "1" -- "0..*" ReportEvidence : evidencias
+    Report "1" -- "0..1" WorkOrder : ordenTrabajo
+    User "1" -- "0..*" WorkOrder : operador
+    User "1" -- "0..*" WorkOrder : cuadrilla
+}
+
+@enduml

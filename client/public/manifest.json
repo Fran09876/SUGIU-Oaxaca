@@ -1,0 +1,17 @@
+{
+  "short_name": "SIGIU Oaxaca",
+  "name": "SIGIU - Gestión de Incidencias Urbanas Oaxaca",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#F5F0E9",
+  "theme_color": "#112250",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "Reporte y seguimiento ciudadano de incidencias de obras públicas y servicios municipales en Oaxaca de Juárez."
+}
