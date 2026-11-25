@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { workOrderApi } from '../../api/workOrderApi';
+import { getFullImageUrl } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { 
   HardHat, 
@@ -212,11 +213,11 @@ const CrewMobileView = () => {
             const report = order.reporte || {};
             const initialPhoto = report.evidencias?.[0]?.url_imagen;
             const fullInitialPhoto = initialPhoto
-              ? (initialPhoto.startsWith('http') ? initialPhoto : `http://localhost:5000${initialPhoto}`)
+              ? getFullImageUrl(initialPhoto)
               : null;
 
             const resolutionPhotoUrl = order.foto_resolucion
-              ? (order.foto_resolucion.startsWith('http') ? order.foto_resolucion : `http://localhost:5000${order.foto_resolucion}`)
+              ? getFullImageUrl(order.foto_resolucion)
               : null;
 
             return (

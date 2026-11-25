@@ -1,10 +1,28 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+// En producción en Vercel, apunta a la URL de Render configurada en VITE_API_URL
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+
+// URL base del backend sin el prefijo /api/v1 para resolver archivos estáticos (/uploads)
+export const SERVER_BASE_URL = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+
+/**
+ * Resuelve una URL de imagen o evidencia fotográfica de manera segura tanto en local como en producción
+ * @param {string} path - Ruta relativa (/uploads/...) o URL absoluta (http...)
+ * @returns {string|null} URL completa resuelta
+ */
+export const getFullImageUrl = (path) => {
+  if (!path) return null;
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${SERVER_BASE_URL}${cleanPath}`;
+};
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000,
+  timeout: 20000,
 });
 
 // Interceptor para inyectar automáticamente el JWT Stateless si existe

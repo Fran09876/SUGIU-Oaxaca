@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const app = require('./app');
 const { testConnection, sequelize, isPostgres } = require('./config/database');
@@ -6,20 +7,26 @@ const runSeed = require('./seeders/seed');
 
 const PORT = process.env.PORT || 5000;
 
+// Garantizar existencia del directorio de uploads en el arranque del servidor
+const uploadsDir = path.resolve(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 const startServer = async () => {
   try {
     console.log('========================================================');
     console.log('   SIGIU: Sistema Integral de Gestión de Incidencias    ');
-    console.log('       Municipio de Oaxaca de Juárez (v1.0 - XP)        ');
+    console.log('       Municipio de Oaxaca de Juárez (v2.0 - XP)        ');
     console.log('========================================================');
 
     const connected = await testConnection();
 
     if (connected) {
       try {
-        console.log('[DB] Sincronizando tablas y modelos con base de datos...');
+        console.log('[DB] Sincronizando modelos con la base de datos...');
         await sequelize.sync({ alter: false });
-        console.log('[DB] Esquema sincronizado.');
+        console.log('[DB] Esquema sincronizado correctamente.');
 
         const { Role } = require('./models');
         const roleCount = await Role.count();
@@ -33,15 +40,14 @@ const startServer = async () => {
     }
 
     if (!isPostgres) {
-      console.info('ℹ️ Nota de Arquitectura: Base de datos en modo desarrollo.');
-      console.info('   Para conectar con tu instancia de PostgreSQL + PostGIS,');
-      console.info('   edita server/.env configurando USE_SQLITE=false y tus credenciales,');
-      console.info('   y ejecuta el script DDL ubicado en server/src/sql/ddl_sigiu.sql');
+      console.info('ℹ️ Nota de Arquitectura: Base de datos en modo desarrollo local (SQLite).');
+      console.info('   Para producción o PostgreSQL + PostGIS, configura DATABASE_URL o USE_SQLITE=false.');
     }
 
-    app.listen(PORT, () => {
-      console.log(`[API] Servidor activo escuchando en http://localhost:${PORT}`);
-      console.log(`[API] Endpoint de salud: http://localhost:${PORT}/api/v1/health`);
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`[API] Servidor activo escuchando en el puerto ${PORT}`);
+      console.log(`[API] Endpoint de salud: http://localhost:${PORT}/health`);
+      console.log(`[API] Endpoint API v1: http://localhost:${PORT}/api/v1/health`);
       console.log(`[API] Catálogos: http://localhost:${PORT}/api/v1/catalogos/categorias`);
       console.log(`[API] Reportes: http://localhost:${PORT}/api/v1/reportes`);
       console.log('========================================================');

@@ -3,6 +3,7 @@ import { reportApi } from '../../api/reportApi';
 import { workOrderApi } from '../../api/workOrderApi';
 import { userApi } from '../../api/userApi';
 import { catalogApi } from '../../api/catalogApi';
+import { getFullImageUrl } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Wrench, 
@@ -375,11 +376,7 @@ const OperatorDashboard = () => {
                 <div>
                   <span className="font-bold block mb-1">Evidencia Fotográfica Ciudadana:</span>
                   <img
-                    src={
-                      inspectingReport.evidencias[0].url_imagen.startsWith('http')
-                        ? inspectingReport.evidencias[0].url_imagen
-                        : `http://localhost:5000${inspectingReport.evidencias[0].url_imagen}`
-                    }
+                    src={getFullImageUrl(inspectingReport.evidencias[0].url_imagen)}
                     alt="Evidencia"
                     className="w-full h-44 object-cover rounded-xl border border-mediumGray/30"
                   />

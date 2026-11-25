@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "Sistema Integral de Gestión de Incidencias Urbanas (SIGIU) - Municipio de Oaxaca de Juárez",
   "scripts": {
+    "start": "npm --prefix server start",
+    "build": "npm --prefix client run build",
     "server": "npm --prefix server start",
     "server:dev": "npm --prefix server run dev",
     "server:test": "npm --prefix server test",

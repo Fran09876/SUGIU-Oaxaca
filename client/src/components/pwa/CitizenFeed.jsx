@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { reportApi } from '../../api/reportApi';
+import { getFullImageUrl } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { 
   MapPin, 
@@ -153,9 +154,7 @@ const CitizenFeed = ({ refreshTrigger }) => {
           {reports.map((report) => {
             const hasEvidence = report.evidencias && report.evidencias.length > 0;
             const evidenceUrl = hasEvidence 
-              ? (report.evidencias[0].url_imagen.startsWith('http') 
-                  ? report.evidencias[0].url_imagen 
-                  : `http://localhost:5000${report.evidencias[0].url_imagen}`)
+              ? getFullImageUrl(report.evidencias[0].url_imagen)
               : null;
 
             return (

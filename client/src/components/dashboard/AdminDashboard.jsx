@@ -3,6 +3,7 @@ import { reportApi } from '../../api/reportApi';
 import { catalogApi } from '../../api/catalogApi';
 import { userApi } from '../../api/userApi';
 import { workOrderApi } from '../../api/workOrderApi';
+import { getFullImageUrl } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import GisMapViewer from '../gis/GisMapViewer';
 import { 
@@ -568,11 +569,7 @@ const AdminDashboard = () => {
                 <span className="text-xs font-bold text-charcoal block">1. Evidencia Inicial (Ciudadano):</span>
                 {inspectOrder.reporte?.evidencias?.[0]?.url_imagen ? (
                   <img
-                    src={
-                      inspectOrder.reporte.evidencias[0].url_imagen.startsWith('http')
-                        ? inspectOrder.reporte.evidencias[0].url_imagen
-                        : `http://localhost:5000${inspectOrder.reporte.evidencias[0].url_imagen}`
-                    }
+                    src={getFullImageUrl(inspectOrder.reporte.evidencias[0].url_imagen)}
                     alt="Evidencia ciudadana"
                     className="w-full h-44 object-cover rounded-xl"
                   />
@@ -590,11 +587,7 @@ const AdminDashboard = () => {
                 </span>
                 {inspectOrder.foto_resolucion ? (
                   <img
-                    src={
-                      inspectOrder.foto_resolucion.startsWith('http')
-                        ? inspectOrder.foto_resolucion
-                        : `http://localhost:5000${inspectOrder.foto_resolucion}`
-                    }
+                    src={getFullImageUrl(inspectOrder.foto_resolucion)}
                     alt="Evidencia de resolución"
                     className="w-full h-44 object-cover rounded-xl"
                   />
