@@ -94,8 +94,9 @@ app.get('/health', async (req, res) => {
   });
 });
 
-// Montaje de rutas de la API bajo /api/v1 (HU-04)
+// Montaje de rutas de la API bajo /api/v1 y directamente en la raíz / para compatibilidad total
 app.use('/api/v1', routes);
+app.use('/', routes);
 
 // Manejador de rutas no encontradas (404)
 app.use((req, res) => {

@@ -24,18 +24,60 @@ const startServer = async () => {
 
     if (connected) {
       try {
-        console.log('[DB] Sincronizando modelos con la base de datos...');
-        await sequelize.sync({ alter: false });
-        console.log('[DB] Esquema sincronizado correctamente.');
+        console.log('[DB] Sincronizando modelos en orden relacional...');
+        const {
+          Role,
+          Department,
+          ReportStatus,
+          User,
+          Category,
+          Report,
+          ReportEvidence,
+          ReportHistory,
+          CitizenSupport,
+          WorkOrder,
+        } = require('./models');
 
-        const { Role } = require('./models');
+        // 1. Tablas independientes de primer nivel (sin FK)
+        await Role.sync();
+        await Department.sync();
+        await ReportStatus.sync();
+
+        // 2. Tablas con claves foráneas hacia primer nivel
+        await User.sync();
+        await Category.sync();
+
+        // 3. Tabla principal de reportes
+        await Report.sync();
+
+        // 4. Tablas dependientes de reportes y usuarios
+        await ReportEvidence.sync();
+        await ReportHistory.sync();
+        await CitizenSupport.sync();
+        await WorkOrder.sync();
+
+        console.log('✅ [DB] Esquema relacional sincronizado en orden.');
+
         const roleCount = await Role.count();
         if (roleCount === 0) {
           console.log('[DB] Base de datos limpia detectada. Ejecutando seeds iniciales...');
           await runSeed();
+        } else {
+          console.log(`✅ [DB] Base de datos activa con catálogos verificados (${roleCount} roles).`);
         }
       } catch (syncErr) {
-        console.warn(`[DB Sync]: ${syncErr.message}`);
+        console.warn(`[DB Sync Error]: ${syncErr.message}`);
+        console.log('[DB Fallback] Intentando inicialización directa mediante deploy_init.sql...');
+        try {
+          const sqlPath = path.resolve(__dirname, 'sql/deploy_init.sql');
+          if (fs.existsSync(sqlPath)) {
+            const sqlContent = fs.readFileSync(sqlPath, 'utf8');
+            await sequelize.query(sqlContent);
+            console.log('✅ [DB Fallback] deploy_init.sql ejecutado exitosamente.');
+          }
+        } catch (sqlErr) {
+          console.error('❌ [DB Fallback Error]:', sqlErr.message);
+        }
       }
     }
 
