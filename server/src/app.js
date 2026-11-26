@@ -72,10 +72,24 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
+  let dbStatus = 'connected';
+  let dbError = null;
+  try {
+    const { sequelize } = require('./config/database');
+    await sequelize.authenticate();
+  } catch (err) {
+    dbStatus = 'disconnected';
+    dbError = err.original?.message || err.message || String(err);
+  }
+
   res.json({
-    status: 'healthy',
+    status: dbStatus === 'connected' ? 'healthy' : 'degraded',
     uptime: Math.floor(process.uptime()),
+    database: {
+      status: dbStatus,
+      error: dbError,
+    },
     timestamp: new Date().toISOString(),
   });
 });

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { sequelize } = require('../config/database');
 
 const authRoutes = require('./authRoutes');
 const reportRoutes = require('./reportRoutes');
@@ -8,12 +9,26 @@ const workOrderRoutes = require('./workOrderRoutes');
 const userRoutes = require('./userRoutes');
 
 // Endpoint de diagnóstico y salud del sistema
-router.get('/health', (req, res) => {
+router.get('/health', async (req, res) => {
+  let dbStatus = 'connected';
+  let dbError = null;
+
+  try {
+    await sequelize.authenticate();
+  } catch (err) {
+    dbStatus = 'disconnected';
+    dbError = err.original?.message || err.message || String(err);
+  }
+
   res.json({
     status: 'online',
     system: 'SIGIU - Sistema Integral de Gestión de Incidencias Urbanas',
     entity: 'Municipio de Oaxaca de Juárez',
-    version: '2.0.0 (XP Iteraciones 0 a 5 completas)',
+    version: '2.0.0 (XP Iteración 6 - Producción)',
+    database: {
+      status: dbStatus,
+      error: dbError,
+    },
     timestamp: new Date().toISOString(),
     postgis_supported: true,
   });
