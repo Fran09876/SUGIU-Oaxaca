@@ -74,69 +74,77 @@ def add_p(doc, text="", bold=False, italic=False, align=WD_ALIGN_PARAGRAPH.JUSTI
         run = p.add_run(text)
         run.bold = bold
         run.italic = italic
+        run.font.name = 'Arial'
     return p
 
 def add_callout(doc, title, text):
-    tbl = doc.add_table(rows=1, cols=1)
-    tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-    cell = tbl.cell(0, 0)
-    set_cell_background(cell, "F5F7F8")
-    set_cell_margins(cell, top=120, bottom=120, left=180, right=180)
+    table = doc.add_table(rows=1, cols=1)
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    cell = table.cell(0, 0)
+    set_cell_background(cell, "D0D4D7")
+    set_cell_margins(cell, top=140, bottom=140, left=180, right=180)
+    set_table_borders(table, color="3F4B48", sz="12", val="single")
+
     p = cell.paragraphs[0]
-    p.paragraph_format.space_after = Pt(2)
-    p.paragraph_format.line_spacing = 1.15
-    r_title = p.add_run(f"NOTA IMPORTANTE: {title}\n")
-    r_title.bold = True
-    r_title.font.size = Pt(10)
-    r_title.font.color.rgb = RGBColor(63, 75, 72)
-    r_text = p.add_run(text)
-    r_text.font.size = Pt(9.5)
-    r_text.font.color.rgb = RGBColor(21, 23, 25)
-    cell._tc.get_or_add_tcPr().append(parse_xml(
-        f'<w:tcBorders {nsdecls("w")}><w:left w:val="single" w:sz="24" w:space="0" w:color="3F4B48"/><w:top w:val="none"/><w:right w:val="none"/><w:bottom w:val="none"/></w:tcBorders>'
-    ))
-    add_p(doc, "", space_after=4)
+    p.paragraph_format.space_after = Pt(4)
+    run_t = p.add_run(f"📌 {title.upper()}\n")
+    run_t.bold = True
+    run_t.font.name = 'Arial'
+    run_t.font.size = Pt(11)
+    run_t.font.color.rgb = RGBColor(21, 23, 25)
+
+    run_b = p.add_run(text)
+    run_b.font.name = 'Arial'
+    run_b.font.size = Pt(10.5)
+    run_b.font.color.rgb = RGBColor(21, 23, 25)
+
+    p_after = doc.add_paragraph()
+    p_after.paragraph_format.space_after = Pt(6)
 
 def add_custom_table(doc, headers, rows_data, col_widths=None):
-    tbl = doc.add_table(rows=len(rows_data) + 1, cols=len(headers))
-    tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-    set_table_borders(tbl, color="B0B7BB", sz="4")
-    make_header_row_repeat(tbl.rows[0])
+    table = doc.add_table(rows=len(rows_data) + 1, cols=len(headers))
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    make_header_row_repeat(table.rows[0])
+    set_table_borders(table, color="7D8181", sz="4", val="single")
 
-    for j, h in enumerate(headers):
-        cell = tbl.cell(0, j)
+    # Header
+    for idx, heading in enumerate(headers):
+        cell = table.cell(0, idx)
         set_cell_background(cell, "151719")
         set_cell_margins(cell, top=100, bottom=100, left=120, right=120)
         p = cell.paragraphs[0]
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
         p.paragraph_format.space_after = Pt(0)
-        p.paragraph_format.line_spacing = 1.0
-        r = p.add_run(h)
-        r.bold = True
-        r.font.size = Pt(9.5)
-        r.font.color.rgb = RGBColor(255, 255, 255)
+        run = p.add_run(heading)
+        run.bold = True
+        run.font.name = 'Arial'
+        run.font.size = Pt(10)
+        run.font.color.rgb = RGBColor(208, 212, 215)
 
-    for i, row in enumerate(rows_data):
-        bg = "FFFFFF" if i % 2 == 0 else "F5F7F8"
-        for j, val in enumerate(row):
-            cell = tbl.cell(i + 1, j)
+    # Rows
+    for r_idx, row in enumerate(rows_data):
+        bg = "FFFFFF" if r_idx % 2 == 0 else "F4F5F6"
+        for c_idx, val in enumerate(row):
+            cell = table.cell(r_idx + 1, c_idx)
             set_cell_background(cell, bg)
-            set_cell_margins(cell, top=90, bottom=90, left=120, right=120)
+            set_cell_margins(cell, top=80, bottom=80, left=100, right=100)
             p = cell.paragraphs[0]
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p.paragraph_format.space_after = Pt(0)
             p.paragraph_format.line_spacing = 1.15
-            p.alignment = WD_ALIGN_PARAGRAPH.LEFT if j > 1 else WD_ALIGN_PARAGRAPH.CENTER
-            r = p.add_run(str(val))
-            r.font.size = Pt(9)
-            r.font.color.rgb = RGBColor(21, 23, 25)
+            run = p.add_run(str(val))
+            run.font.name = 'Arial'
+            run.font.size = Pt(9.5)
+            run.font.color.rgb = RGBColor(21, 23, 25)
 
     if col_widths:
-        for row in tbl.rows:
-            for j, w in enumerate(col_widths):
-                row.cells[j].width = Inches(w)
+        for r in table.rows:
+            for idx, width in enumerate(col_widths):
+                r.cells[idx].width = Inches(width)
 
-    add_p(doc, "", space_after=6)
-    return tbl
+    p_after = doc.add_paragraph()
+    p_after.paragraph_format.space_after = Pt(6)
+    return table
 
 # ==============================================================================
 # 1. MANUAL DE USUARIO
@@ -151,70 +159,80 @@ def generate_user_manual():
     p.runs[0].font.size = Pt(13)
     p_title = add_p(doc, "MANUAL DE USUARIO DEL SISTEMA SIGIU", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=12)
     p_title.runs[0].font.size = Pt(16)
-    add_p(doc, "Plataforma Web Responsiva para la Gestión de Incidencias Urbanas en Oaxaca de Juárez\nGuía de Operación Paso a Paso para Ciudadanos, Operadores, Cuadrillas y Administradores", italic=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=30)
-    add_p(doc, "Autor: José Francisco Pérez Pérez (No. Control: 2211204)\nDocente: Cruz Hernández Bernardo Roberto\nPeriodo: Agosto - Diciembre 2026", align=WD_ALIGN_PARAGRAPH.CENTER, space_after=40)
+    add_p(doc, "Plataforma Web Responsiva para la Gestión de Incidencias Urbanas en Oaxaca de Juárez\nGuía de Operación Paso a Paso en Entorno de Producción Cloud\n(Acceso Universal sin Instalación para Ciudadanos, Operadores, Cuadrillas y Administradores)", italic=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=24)
+    add_p(doc, "URL Oficial en Producción: https://sugiu-oaxaca.vercel.app/\nAutor: José Francisco Pérez Pérez (No. Control: 2211204)\nDocente: Cruz Hernández Bernardo Roberto\nPeriodo: Agosto - Diciembre 2026", align=WD_ALIGN_PARAGRAPH.CENTER, space_after=36)
     doc.add_page_break()
 
     # Contenido
     doc.add_heading("1. INTRODUCCIÓN Y REQUISITOS DE ACCESO", level=1)
-    add_p(doc, "El Sistema Integral de Gestión de Incidencias Urbanas (SIGIU) es una plataforma web responsiva accesible mediante cualquier navegador moderno (Google Chrome, Mozilla Firefox, Microsoft Edge, Safari) desde computadoras de escritorio, laptops, tabletas y teléfonos celulares.")
-    add_p(doc, "Para acceder al sistema no es necesario descargar ninguna aplicación desde tiendas digitales. Basta con ingresar a la dirección web asignada por el municipio (por ejemplo, en entorno local: http://localhost:5173).")
+    add_p(doc, "El Sistema Integral de Gestión de Incidencias Urbanas (SIGIU) es una plataforma web responsiva de acceso público desplegada en la nube para el Municipio de Oaxaca de Juárez. Se encuentra alojada en infraestructura de alta disponibilidad y es accesible desde cualquier navegador moderno (Google Chrome, Safari, Mozilla Firefox, Microsoft Edge).")
+    
+    add_callout(doc, "ACCESO DIRECTO EN LA NUBE (CERO INSTALACIÓN)", "Para utilizar el sistema no es necesario descargar ninguna aplicación desde Google Play Store ni Apple App Store, ni instalar archivos ejecutables. La plataforma se ejecuta directamente desde la nube ingresando a la URL oficial: https://sugiu-oaxaca.vercel.app/")
 
-    doc.add_heading("2. PERFIL CIUDADANO (PÚBLICO EN GENERAL)", level=1)
-    doc.add_heading("2.1. Registro de Cuenta Ciudadana e Inicio de Sesión", level=2)
-    add_p(doc, "Cualquier persona puede navegar y reportar como ciudadano digital. Sin embargo, para dar seguimiento a un historial propio de incidencias se recomienda registrar una cuenta:")
-    add_p(doc, "1. Haga clic en el botón 'Ingresar al Sistema' ubicado en la esquina superior derecha del encabezado institucional.")
-    add_p(doc, "2. En la ventana modal, seleccione la pestaña 'Registro Ciudadano'.")
-    add_p(doc, "3. Complete los campos requeridos: Nombre completo, correo electrónico, teléfono de contacto, colonia de residencia (seleccionable del padrón de Oaxaca) y contraseña segura (mínimo 6 caracteres).")
-    add_p(doc, "4. Presione 'Completar Registro Ciudadano'. El sistema creará la cuenta y mantendrá la sesión activa automáticamente mediante un token digital seguro.")
+    add_p(doc, "Requisitos para los usuarios:")
+    add_p(doc, "1. Dispositivo con Navegador Web: Cualquier computadora de escritorio, laptop, tableta o teléfono móvil con conexión a Internet.")
+    add_p(doc, "2. Cámara Integrada o Trasera: Indispensable para la captura y adjunción de evidencias fotográficas in-situ (baches, fugas de agua, obras terminadas). El navegador solicitará permiso al momento de abrir la cámara.")
+    add_p(doc, "3. Geolocalización (GPS): Recomendada para capturar las coordenadas exactas de la falla con precisión satelital WGS84 al presionar 'Detectar mi GPS'.")
 
-    doc.add_heading("2.2. Cómo Levantar un Reporte de Falla Urbana (Paso a Paso)", level=2)
-    add_p(doc, "1. En la página principal, asegúrese de encontrarse en la pestaña 'Reportar'.")
-    add_p(doc, "2. Paso 1 - Categoría de Incidencia: Seleccione una de las tarjetas interactivas correspondientes al tipo de problema observado: Bacheo y Pavimentación, Alumbrado Público, Fugas de Agua y Drenaje, Recolección de Basura o Semáforos y Señalización. Cada tarjeta indica el tiempo estimado de atención municipal (SLA).")
-    add_p(doc, "3. Paso 2 - Ubicación Exacta (GPS): El sistema incluye un radar geográfico que puede detectar su ubicación vía satélite presionando 'Detectar mi GPS'. El navegador solicitará permiso de ubicación (haga clic en 'Permitir'). Si prefiere ajustar manualmente el punto exacto, presione el botón de mapa y arrastre el marcador rojo sobre la calle precisa de la falla.")
-    add_p(doc, "4. Paso 3 - Datos Descriptivos: Indique la colonia de Oaxaca de Juárez, calle y esquinas de referencia, un título breve de la falla (ej. 'Hundimiento profundo de adoquín frente al templo') y una descripción clara de las dimensiones y el riesgo peatonal o vehicular.")
-    add_p(doc, "5. Paso 4 - Nivel de Severidad: Seleccione el nivel percibido: Baja, Media, Alta o Urgente.")
-    add_p(doc, "6. Paso 5 - Evidencia Fotográfica: Presione 'Abrir Cámara' para capturar la fotografía directamente en el lugar, o 'Galería de Archivos' para adjuntar una imagen JPG, PNG o WEBP (máximo 5MB).")
-    add_p(doc, "7. Paso 6 - Envío y Acuse: Presione 'Enviar Reporte Ciudadano Oficial'. Una vez procesado, aparecerá en pantalla una ficha con el Folio Único Oficial (ej. OAX-2026-8002). Presione 'Copiar' para conservar su número de seguimiento.")
+    doc.add_heading("2. CREDENCIALES OFICIALES PRECONFIGURADAS EN PRODUCCIÓN", level=1)
+    add_p(doc, "El sistema cuenta con cuentas oficiales preconfiguradas y activas en la base de datos de producción para evaluar y operar cada uno de los roles del sistema:")
+    
+    add_custom_table(
+        doc,
+        ["Rol del Sistema", "Correo Electrónico Oficial", "Contraseña", "Alcance y Competencia"],
+        [
+            ["Administrador", "admin@oaxaca.gob.mx", "JOse2002", "Control total, métricas analíticas, CRUD de usuarios, dependencias y aprobación final."],
+            ["Operador (DOPDU)", "operador@oaxaca.gob.mx", "JOse2002", "Mesa de despacho técnico, inspección de reportes y emisión de Órdenes de Trabajo (OT)."],
+            ["Cuadrilla 01 (Vial)", "cuadrilla@oaxaca.gob.mx", "JOse2002", "Personal operativo en campo de bacheo/pavimentación; ruta GPS y subida de evidencia de resolución."],
+            ["Cuadrilla 02 (Redes)", "cuadrilla2@oaxaca.gob.mx", "JOse2002", "Personal operativo de alumbrado público y servicios municipales."],
+            ["Ciudadano Registrado", "ciudadano@oaxaca.gob.mx", "JOse2002", "Habitante de Oaxaca; levantamiento con folio propio y seguimiento en línea de tiempo."],
+        ],
+        [1.3, 2.0, 1.1, 2.6]
+    )
 
-    doc.add_heading("2.3. Consulta de Muro Comunitario y Apoyo Ciudadano", level=2)
-    add_p(doc, "En la pestaña 'Muro', los habitantes pueden revisar las fallas reportadas recientemente por otros vecinos. Si un bache o luminaria reportada por otra persona también le afecta, presione el botón 'A mí también me afecta'. El sistema sumará su respaldo y elevará la prioridad de atención para la cuadrilla municipal sin generar duplicidad de reportes.")
+    doc.add_heading("3. PERFIL CIUDADANO (PÚBLICO EN GENERAL)", level=1)
+    doc.add_heading("3.1. Registro e Inicio de Sesión", level=2)
+    add_p(doc, "Cualquier persona puede navegar y reportar como ciudadano. Para dar seguimiento personalizado:")
+    add_p(doc, "1. Ingrese a https://sugiu-oaxaca.vercel.app/ y presione 'Ingresar al Sistema' en la esquina superior derecha.")
+    add_p(doc, "2. En la ventana modal, seleccione 'Iniciar Sesión' e introduzca las credenciales (o presione 'Registro Ciudadano' para crear una cuenta personal en menos de un minuto).")
+    add_p(doc, "3. El sistema mantendrá la sesión activa mediante un token JWT seguro almacenado localmente.")
 
-    doc.add_heading("2.4. Visor Cartográfico Urbano (GIS)", level=2)
-    add_p(doc, "En la pestaña 'Mapa GIS', los ciudadanos pueden explorar la ciudad sobre el mapa de OpenStreetMap. Utilice las píldoras superiores para filtrar por tipo de falla. Al pulsar sobre cualquier marcador, se abrirá un panel inferior con la fotografía, colonia, fecha y estado de avance.")
+    doc.add_heading("3.2. Cómo Levantar un Reporte de Falla Urbana (Paso a Paso)", level=2)
+    add_p(doc, "1. En la página de inicio, pulse la pestaña 'Reportar'.")
+    add_p(doc, "2. Paso 1 - Categoría de Incidencia: Seleccione una categoría municipal (Bacheo y Pavimentación, Alumbrado Público, Fugas de Agua, Recolección de Basura o Semáforos). Cada opción muestra su tiempo máximo de resolución (SLA).")
+    add_p(doc, "3. Paso 2 - Ubicación Exacta (GPS): Presione 'Detectar mi GPS' para obtener la posición satelital automática, o arrastre el marcador interactivo en el mapa para afinar la ubicación.")
+    add_p(doc, "4. Paso 3 - Datos Descriptivos: Indique la colonia de Oaxaca de Juárez, calle de referencia, título de la falla y descripción detallada del problema.")
+    add_p(doc, "5. Paso 4 - Nivel de Severidad: Seleccione entre Baja, Media, Alta o Urgente.")
+    add_p(doc, "6. Paso 5 - Evidencia Fotográfica: Presione 'Abrir Cámara' para capturar la imagen directamente desde su teléfono o laptop, o seleccione una foto de la galería.")
+    add_p(doc, "7. Paso 6 - Envío y Folio: Presione 'Enviar Reporte Ciudadano Oficial'. El sistema generará una clave de seguimiento única (ej. REP-202611-001) para consulta posterior.")
 
-    doc.add_heading("2.5. Seguimiento con Línea de Tiempo ('Mis Reportes')", level=2)
-    add_p(doc, "En la pestaña 'Mis Reportes' se ofrece un buscador directo por folio para quienes no tengan sesión iniciada, así como la lista completa de reportes emitidos por el usuario registrado. Una línea de tiempo de 5 etapas indica claramente si la falla está en: 1. Recibido ➔ 2. En Validación ➔ 3. Asignado ➔ 4. En Proceso ➔ 5. Atendido.")
-
-    doc.add_page_break()
-
-    doc.add_heading("3. PERFIL OPERADOR DE DEPENDENCIA", level=1)
-    add_p(doc, "El Operador es el enlace técnico de cada dirección municipal (DOPDU, Servicios, SOAPA, Tránsito). Al ingresar con sus credenciales institucionales (`operador@oaxaca.gob.mx`), el sistema despliega automáticamente la Mesa de Despacho Operativo:")
-    add_p(doc, "1. Métricas Inmediatas: Cuatro tarjetas superiores muestran en tiempo real las incidencias recibidas, asignadas, en proceso y resueltas.")
-    add_p(doc, "2. Filtros Dinámicos: El operador puede filtrar por estatus de atención, nivel de prioridad o ingresar términos de búsqueda por folio o colonia.")
-    add_p(doc, "3. Inspección de Falla: Al pulsar el botón de documento en cualquier fila de la tabla, se abre la ficha con la fotografía ciudadana y coordenadas exactas.")
-    add_p(doc, "4. Despacho de Orden de Trabajo (OT): Al pulsar 'Despachar OT', se abre el modal oficial de despacho. El operador selecciona la cuadrilla de campo disponible, establece la fecha y hora límite de cumplimiento conforme al SLA y redacta instrucciones técnicas específicas sobre maquinaria o materiales necesarios. Al guardar, el reporte pasa a 'Asignado' y se emite la orden con folio `OT-2026-XXXX`.")
-
-    doc.add_page_break()
-
-    doc.add_heading("4. PERFIL PERSONAL DE CUADRILLA EN CAMPO", level=1)
-    add_p(doc, "El personal operativo de cuadrilla (`cuadrilla@oaxaca.gob.mx`) cuenta con una interfaz web responsiva especialmente diseñada para teléfonos móviles y trabajo en terreno:")
-    add_p(doc, "1. Bandeja de Órdenes: La vista muestra exclusivamente las órdenes asignadas a dicha cuadrilla, con filtros de 'Todas', 'Activas en Campo' y 'Atendidas'.")
-    add_p(doc, "2. Navegación Satelital: Cada orden incluye un botón 'Ruta GPS' que abre directamente Google Maps con las coordenadas del reporte para guiar el camión de volteo o brigada hasta el punto exacto de la falla.")
-    add_p(doc, "3. Inicio de Reparación: Al llegar al sitio de la obra, la cuadrilla presiona 'Iniciar Reparación (En Proceso)'. El sistema registra la fecha y hora de inicio de actividades y notifica el cambio de estado.")
-    add_p(doc, "4. Cierre Técnico con Fotografía de Resolución: Al concluir los trabajos de bacheo o reparación, la cuadrilla presiona 'Concluir y Subir Evidencia'. El sistema exige dos elementos obligatorios:")
-    add_p(doc, "   a) Bitácora Técnica: Redacción de materiales y labores efectuadas (ej. 'Se aplicaron 3m² de asfalto en caliente y compactación con rodillo').")
-    add_p(doc, "   b) Fotografía de Resolución: Captura con la cámara de la obra concluida. Sin esta fotografía, el sistema rechaza el cierre. Al enviarse, la orden pasa a 'Atendida' y el reporte a 'Atendido'.")
+    doc.add_heading("3.3. Muro Comunitario, Apoyos y Mapa GIS", level=2)
+    add_p(doc, "En la pestaña 'Muro', los habitantes pueden revisar fallas reportadas por vecinos y pulsar 'A mí también me afecta' para sumar votos de respaldo y priorizar su atención. En la pestaña 'Mapa GIS', los ciudadanos pueden explorar las fallas distribuidas sobre el plano cartográfico de la ciudad con marcadores clasificados por color.")
 
     doc.add_page_break()
 
-    doc.add_heading("5. PERFIL ADMINISTRADOR CENTRAL", level=1)
-    add_p(doc, "El Administrador (`admin@oaxaca.gob.mx`) dispone del control integral de la plataforma mediante cinco módulos:")
-    add_p(doc, "1. Analítica y Rendición de Cuentas: Métricas de volumen de incidencias, porcentaje de eficiencia resolutiva, tiempo promedio de respuesta en horas, apoyos ciudadanos emitidos, ranking de las 5 colonias con mayor número de fallas y balance de estados.")
-    add_p(doc, "2. Mapeo GIS General: Visor cartográfico macro de todas las incidencias del municipio con clústeres y capas.")
-    add_p(doc, "3. Supervisión de Órdenes: Permite auditar las órdenes concluidas y abrir el Comparador Visual de Evidencias ('Antes vs Después') para comprobar la calidad del trabajo de la cuadrilla antes de presionar 'Aprobar Cierre Definitivo'.")
-    add_p(doc, "4. Gestión de Usuarios (CRUD): Directorio para dar de alta cuentas de operadores y cuadrillas, editar datos y activar o suspender accesos.")
-    add_p(doc, "5. Catálogos Municipales (CRUD): Módulo para dar de alta nuevas dependencias o categorías de falla ajustando las horas de atención del SLA.")
+    doc.add_heading("4. PERFIL OPERADOR DE DEPENDENCIA", level=1)
+    add_p(doc, "Al iniciar sesión como Operador (`operador@oaxaca.gob.mx`), el sistema despliega la Mesa de Despacho Operativo:")
+    add_p(doc, "1. Métricas de Bandeja: Conteo de reportes recibidos, validados, asignados y resueltos.")
+    add_p(doc, "2. Inspección Técnica: Visualización de la fotografía ciudadana, datos geográficos y nivel de severidad.")
+    add_p(doc, "3. Despacho de Orden de Trabajo (OT): Al pulsar 'Despachar OT', el operador selecciona la brigada disponible, define la fecha límite de cumplimiento según el catálogo SLA e ingresa las instrucciones de trabajo. La incidencia avanza automáticamente al estado 'Asignado'.")
+
+    doc.add_page_break()
+
+    doc.add_heading("5. PERFIL PERSONAL DE CUADRILLA EN CAMPO", level=1)
+    add_p(doc, "Diseñado específicamente para dispositivos móviles y uso en calle (`cuadrilla@oaxaca.gob.mx`):")
+    add_p(doc, "1. Bandeja Móvil: Muestra las órdenes asignadas a la cuadrilla activa.")
+    add_p(doc, "2. Ruta GPS: El botón 'Ruta GPS' abre directamente la navegación en Google Maps guiando al vehículo operativo hasta la calle reportada.")
+    add_p(doc, "3. Iniciar Reparación: Al arribar al punto, la cuadrilla presiona 'Iniciar Reparación', cambiando el estado a 'En Proceso' con marca temporal.")
+    add_p(doc, "4. Cierre Técnico con Foto de Resolución Obligatoria: Al terminar la reparación, la cuadrilla abre la cámara, captura la fotografía de la obra terminada y redacta una breve bitácora. Sin foto de resolución, el sistema no permite el cierre.")
+
+    doc.add_page_break()
+
+    doc.add_heading("6. PERFIL ADMINISTRADOR CENTRAL", level=1)
+    add_p(doc, "El Administrador (`admin@oaxaca.gob.mx`) dispone del panel de control global:")
+    add_p(doc, "1. Analítica y Rendición de Cuentas: Indicadores de resolución, tiempo promedio de respuesta, ranking de colonias críticas y balance de gestión.")
+    add_p(doc, "2. Comparador Visual de Evidencias ('Antes vs Después'): Permite contrastar la fotografía inicial ciudadana contra la fotografía de conclusión de la cuadrilla antes de presionar 'Aprobar Cierre Definitivo'.")
+    add_p(doc, "3. Catálogos y Usuarios: Altas, bajas y modificaciones de cuentas de personal y dependencias municipales.")
 
     doc_path = os.path.join(DOC_DIR, "manual_usuario_SIGIU.docx")
     doc.save(doc_path)
@@ -230,60 +248,67 @@ def generate_install_manual():
 
     p = add_p(doc, "TECNOLÓGICO NACIONAL DE MÉXICO\nINSTITUTO TECNOLÓGICO DE OAXACA", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=20)
     p.runs[0].font.size = Pt(13)
-    p_title = add_p(doc, "MANUAL DE INSTALACIÓN Y CONFIGURACIÓN TÉCNICA", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=12)
+    p_title = add_p(doc, "MANUAL DE INSTALACIÓN, DESPLIEGUE Y PUESTA EN MARCHA", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=12)
     p_title.runs[0].font.size = Pt(16)
-    add_p(doc, "Guía de Despliegue Local y Puesta a Punto del Entorno SIGIU (Node.js + PostgreSQL + React)", italic=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=30)
-    add_p(doc, "Autor: José Francisco Pérez Pérez (No. Control: 2211204)\nPeriodo: Agosto - Diciembre 2026", align=WD_ALIGN_PARAGRAPH.CENTER, space_after=40)
+    add_p(doc, "Guía de Despliegue en la Nube (Producción SaaS) y Configuración Local del Entorno SIGIU\n(Vercel + Render + Neon PostgreSQL/PostGIS)", italic=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=24)
+    add_p(doc, "URL de Producción Activa: https://sugiu-oaxaca.vercel.app/\nRepositorio: https://github.com/Fran09876/SUGIU-Oaxaca\nAutor: José Francisco Pérez Pérez (No. Control: 2211204)\nPeriodo: Agosto - Diciembre 2026", align=WD_ALIGN_PARAGRAPH.CENTER, space_after=36)
     doc.add_page_break()
 
-    doc.add_heading("1. REQUISITOS PREVIOS DEL SISTEMA", level=1)
-    add_p(doc, "Para la instalación y ejecución exitosa de SIGIU en un servidor o estación de trabajo, se deben cumplir los siguientes requisitos de hardware y software:")
+    doc.add_heading("1. MODALIDADES DE ACCESO Y DESPLIEGUE", level=1)
+    add_p(doc, "El sistema SIGIU se encuentra implementado bajo dos esquemas complementarios:")
+    add_p(doc, "A. Modalidad SaaS en Producción Cloud (Cero Instalación): Destinada a usuarios finales, servidores públicos, enlaces de dependencias y cuadrillas. La plataforma ya se encuentra completamente compilada, configurada y disponible en línea.")
+    add_p(doc, "B. Modalidad DevOps / Desarrollo On-Premise: Destinada a administradores de sistemas y desarrolladores que requieran clonar el repositorio, desplegar instancias réplica o ejecutar la plataforma en servidores locales.")
+
+    add_callout(doc, "USO OPERATIVO INMEDIATO EN PRODUCCIÓN", "Para utilizar la plataforma en el día a día municipal, los usuarios NO requieren instalar software, servidores ni bases de datos locales. Solo deben ingresar con cualquier navegador web con cámara a: https://sugiu-oaxaca.vercel.app/")
+
+    doc.add_heading("2. ARQUITECTURA DE PRODUCCIÓN EN LA NUBE (DESPLIEGUE GRATUITO)", level=1)
+    add_p(doc, "La arquitectura de producción de SIGIU está orquestada sobre tres servicios en la nube de nivel gratuito altamente confiables:")
+    
     add_custom_table(
         doc,
-        ["Componente de Software", "Versión Requerida", "Propósito en la Instalación"],
+        ["Capa del Sistema", "Proveedor Cloud", "Tecnología / Motor", "Función en Producción"],
         [
-            ["Sistema Operativo", "Windows 10/11 x64, Ubuntu 20.04+ o macOS", "Entorno host de desarrollo y ejecución"],
-            ["Node.js", "v18.0.0 LTS o superior (v20+ recomendada)", "Runtime del servidor Express y herramientas npm"],
-            ["npm (Node Package Manager)", "v9.0.0 o superior", "Gestor de paquetes de dependencias"],
-            ["PostgreSQL", "v15.0 o superior", "Servidor de base de datos relacional (puerto 5432)"],
-            ["Git", "v2.30+ (opcional)", "Control de versiones para clonación del código fuente"],
-            ["Navegador Web", "Google Chrome, Firefox o Edge actualizados", "Cliente de ejecución con soporte para Web Geolocation API"],
+            ["Base de Datos Espacial", "Neon Serverless (neon.tech)", "PostgreSQL 16 + PostGIS 3.6 (AWS us-east-2)", "Persistencia relacional, funciones geoespaciales y almacenamiento de tablas."],
+            ["Backend API REST", "Render Cloud (render.com)", "Node.js 20 LTS + Express 4 + Sequelize ORM", "Servicios web RESTful, enrutamiento dual (/api/v1 y /), CORS y autenticación JWT."],
+            ["Frontend Responsivo", "Vercel Platform (vercel.com)", "React 19 + Vite 8 + Tailwind CSS", "Alojamiento SPA con rewrites en vercel.json, distribución global CDN y PWA."],
         ],
-        [2.0, 2.0, 2.5]
+        [1.5, 1.6, 2.0, 1.9]
     )
 
-    doc.add_heading("2. ESTRUCTURA DEL REPOSITORIO Y DESCARGA", level=1)
-    add_p(doc, "El proyecto está organizado como un monorepositorio con las siguientes carpetas principales:")
-    add_p(doc, "- `/server`: Código de la API RESTful en Node.js Express, modelos Sequelize, seeders y scripts SQL.")
-    add_p(doc, "- `/client`: Código de la SPA en React 19, componentes Tailwind y configuración de empaquetado Vite.")
-    add_p(doc, "- `/documentacion`: Informes técnicos, manuales y diagramas UML.")
+    doc.add_heading("3. PROCEDIMIENTO DE DESPLIEGUE EN LA NUBE PASO A PASO", level=1)
+    doc.add_heading("3.1. Configuración de Base de Datos en Neon", level=2)
+    add_p(doc, "1. Crear una cuenta en https://neon.tech e inicializar un proyecto PostgreSQL llamado `sigiu-db`.")
+    add_p(doc, "2. En el SQL Editor de Neon, ejecutar el script consolidado `deploy_init.sql` incluido en el repositorio. Este script:")
+    add_p(doc, "   - Habilita las extensiones `postgis` y `pgcrypto`.")
+    add_p(doc, "   - Crea las tablas con sus índices relacionales y espaciales WGS84.")
+    add_p(doc, "   - Siembra los catálogos y usuarios oficiales con contraseña predeterminada (`JOse2002`).")
+    add_p(doc, "3. Copiar la cadena de conexión con SSL: `postgresql://user:pass@ep-xyz.us-east-2.aws.neon.tech/neondb?sslmode=require`.")
 
-    doc.add_heading("3. INSTALACIÓN DE DEPENDENCIAS", level=1)
-    add_p(doc, "Abra una terminal de comandos (PowerShell, Bash o CMD) en la raíz del proyecto y ejecute los siguientes comandos:")
-    add_p(doc, "Paso 1: Instalación de dependencias del servidor backend:\n```bash\ncd server\nnpm install\n```")
-    add_p(doc, "Paso 2: Instalación de dependencias del cliente frontend:\n```bash\ncd ../client\nnpm install\n```")
+    doc.add_heading("3.2. Configuración del Backend en Render", level=2)
+    add_p(doc, "1. En https://render.com, crear un nuevo 'Web Service' vinculado al repositorio `https://github.com/Fran09876/SUGIU-Oaxaca`.")
+    add_p(doc, "2. Configurar: Root Directory = `server`, Environment = `Node`, Build Command = `npm install`, Start Command = `npm start`.")
+    add_p(doc, "3. En 'Environment Variables', agregar:")
+    add_p(doc, "   - `DATABASE_URL`: Cadena de conexión de Neon.")
+    add_p(doc, "   - `NODE_ENV`: `production`.")
+    add_p(doc, "   - `JWT_SECRET`: Clave criptográfica para firmas.")
+    add_p(doc, "   - `CLIENT_URL`: `https://sugiu-oaxaca.vercel.app`.")
+    add_p(doc, "4. Render iniciará el contenedor y expondrá la URL pública del backend.")
 
-    doc.add_heading("4. CONFIGURACIÓN DE VARIABLES DE ENTORNO", level=1)
-    add_p(doc, "En el directorio `server/`, cree o edite el archivo `.env` tomando como base la plantilla `.env.example`:")
-    add_p(doc, "```env\nPORT=5000\nNODE_ENV=development\nUSE_SQLITE=false\nDB_HOST=localhost\nDB_PORT=5432\nDB_NAME=sigiu_db\nDB_USER=postgres\nDB_PASSWORD=tu_password_postgres\nJWT_SECRET=sigiu_oaxaca_jwt_super_secret_key_2026_secure\nJWT_EXPIRES_IN=7d\nCLIENT_URL=http://localhost:5173\nUPLOAD_DIR=uploads\n```")
-    add_callout(doc, "MODO DE FALLBACK SQLITE", "Si no dispone de una instancia de PostgreSQL en su equipo de desarrollo, configure `USE_SQLITE=true`. El sistema creará y utilizará automáticamente una base de datos local embebida en `server/database.sqlite`.")
+    doc.add_heading("3.3. Configuración del Frontend en Vercel", level=2)
+    add_p(doc, "1. En https://vercel.com, importar el repositorio de GitHub.")
+    add_p(doc, "2. Configurar: Root Directory = `client`, Framework Preset = `Vite`.")
+    add_p(doc, "3. Variable de entorno: `VITE_API_URL` = URL asignada por Render.")
+    add_p(doc, "4. Presionar 'Deploy'. Vercel compilará la SPA y generará la URL de acceso global.")
 
-    doc.add_heading("5. INICIALIZACIÓN DE LA BASE DE DATOS POSTGRESQL", level=1)
-    add_p(doc, "1. Inicie su servidor de PostgreSQL e ingrese a la consola de administración (`psql` o pgAdmin).")
-    add_p(doc, "2. Cree la base de datos oficial del sistema:\n```sql\nCREATE DATABASE sigiu_db;\n```")
-    add_p(doc, "3. Conéctese a la base de datos `sigiu_db` y ejecute el script DDL de creación de tablas e índices ubicado en `server/src/sql/ddl_sigiu.sql`:")
-    add_p(doc, "```bash\npsql -U postgres -d sigiu_db -f src/sql/ddl_sigiu.sql\n```")
-    add_p(doc, "4. Ejecute el script de sembrado de datos iniciales para cargar los roles, dependencias, categorías y usuarios de prueba:\n```bash\ncd server\nnode src/seeders/seed.js\n```")
+    doc.add_page_break()
 
-    doc.add_heading("6. INICIO DE LOS SERVIDORES", level=1)
-    add_p(doc, "Paso 1: Iniciar el backend en una terminal:\n```bash\ncd server\nnpm start\n```\nEl servidor informará que está escuchando en: `http://localhost:5000`.")
-    add_p(doc, "Paso 2: Comprobar el diagnóstico del backend en su navegador:\nAbra `http://localhost:5000/api/v1/health`. Debe recibir un objeto JSON indicando `\"status\": \"online\"`.")
-    add_p(doc, "Paso 3: Iniciar el frontend en otra terminal:\n```bash\ncd client\nnpm run dev\n```\nVite iniciará la interfaz web en: `http://localhost:5173`.")
-
-    doc.add_heading("7. SOLUCIÓN DE PROBLEMAS COMUNES", level=1)
-    add_p(doc, "- Error de puerto ocupado (EADDRINUSE 5000 o 5173): Cierre el proceso que esté utilizando el puerto mediante `netstat` y `taskkill` en Windows, o cambie el puerto en `server/.env`.")
-    add_p(doc, "- Advertencia de PostGIS no habilitado: El sistema opera de manera nativa con coordenadas WGS84 decimales y GeoJSON sin requerir obligatoriamente la extensión binaria. Para habilitarla en PostgreSQL, ejecute `CREATE EXTENSION postgis;` en la consola de PostgreSQL.")
-    add_p(doc, "- Permiso de geolocalización bloqueado: Los navegadores modernos exigen HTTPS para la Geolocation API cuando se accede desde una IP remota. En `localhost`, el permiso opera normalmente en HTTP.")
+    doc.add_heading("4. INSTALACIÓN Y EJECUCIÓN EN ENTORNO LOCAL (DESARROLLO)", level=1)
+    add_p(doc, "Si se desea ejecutar el sistema en una máquina local para desarrollo o evaluación offline:")
+    add_p(doc, "1. Requisitos: Node.js 18+ LTS, PostgreSQL 15+ (o modo SQLite automático) y Git.")
+    add_p(doc, "2. Clonar el repositorio:\n```bash\ngit clone https://github.com/Fran09876/SUGIU-Oaxaca.git\ncd SUGIU-Oaxaca\n```")
+    add_p(doc, "3. Instalar dependencias del servidor y cliente:\n```bash\ncd server && npm install\ncd ../client && npm install\n```")
+    add_p(doc, "4. Iniciar servicios locales:\n```bash\n# Terminal 1 (Backend):\ncd server && npm start\n# Terminal 2 (Frontend):\ncd client && npm run dev\n```")
+    add_p(doc, "5. Abrir en el navegador: `http://localhost:5173`.")
 
     doc_path = os.path.join(DOC_DIR, "manual_instalacion_SIGIU.docx")
     doc.save(doc_path)
@@ -299,72 +324,61 @@ def generate_technical_manual():
 
     p = add_p(doc, "TECNOLÓGICO NACIONAL DE MÉXICO\nINSTITUTO TECNOLÓGICO DE OAXACA", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=20)
     p.runs[0].font.size = Pt(13)
-    p_title = add_p(doc, "MANUAL TÉCNICO DE ARQUITECTURA Y MANTENIMIENTO", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=12)
+    p_title = add_p(doc, "MANUAL TÉCNICO DE ARQUITECTURA, API REST Y SEGURIDAD", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=12)
     p_title.runs[0].font.size = Pt(16)
-    add_p(doc, "Especificación Detallada de Endpoints RESTful, Modelos Sequelize, Seguridad y Procedimientos de Mantenimiento", italic=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=30)
-    add_p(doc, "Autor: José Francisco Pérez Pérez (No. Control: 2211204)\nPeriodo: Agosto - Diciembre 2026", align=WD_ALIGN_PARAGRAPH.CENTER, space_after=40)
+    add_p(doc, "Especificación de la Arquitectura Cloud Desacoplada, Protocolos Criptográficos, Esquema de Base de Datos y Catálogo de Endpoints", italic=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=24)
+    add_p(doc, "Plataforma en Producción: https://sugiu-oaxaca.vercel.app/\nBackend API: Render Web Service\nBase de Datos: Neon PostgreSQL 16 + PostGIS 3.6\nAutor: José Francisco Pérez Pérez (No. Control: 2211204)\nPeriodo: Agosto - Diciembre 2026", align=WD_ALIGN_PARAGRAPH.CENTER, space_after=36)
     doc.add_page_break()
 
-    doc.add_heading("1. ARQUITECTURA EN CAPAS Y DESACOPLAMIENTO", level=1)
-    add_p(doc, "El sistema SIGIU se rige bajo una arquitectura desacoplada en cuatro capas fundamentales:")
-    add_p(doc, "1. Capa de Presentación: SPA en React 19 empaquetada con Vite. Administra el estado global de autenticación con Context API (`AuthContext`) y expone las vistas por rol con Tailwind CSS.")
-    add_p(doc, "2. Capa de Servicios y Controladores: Servidor Express.js estructurado en controladores modulares (`authController`, `reportController`, `workOrderController`, `userController`, `catalogController`).")
-    add_p(doc, "3. Capa de Middlewares y Seguridad: Interceptores de autenticación JWT (`authenticateJWT`), control de acceso RBAC (`authorizeRoles`), carga defensiva con Multer (`multer.js`) y manejador global de errores (`errorHandler.js`).")
-    add_p(doc, "4. Capa de Persistencia ORM: Modelos de datos Sequelize comunicados mediante el driver `pg` hacia PostgreSQL 15+.")
+    doc.add_heading("1. ARQUITECTURA CLOUD DESACOPLADA Y PERSISTENCIA ESPACIAL", level=1)
+    add_p(doc, "SIGIU opera bajo un diseño desacoplado de tres capas en la nube pública:")
+    add_p(doc, "1. Frontend SPA (Vercel): Desarrollada en React 19 con empaquetado optimizado en Vite y diseño responsivo adaptativo con Tailwind CSS. Utiliza Leaflet para la renderización cartográfica de geometrías GeoJSON.")
+    add_p(doc, "2. Backend API RESTful (Render): Servicio web Node.js Express estructurado en controladores, middlewares defensivos y Sequelize ORM.")
+    add_p(doc, "3. Base de Datos Espacial (Neon PostgreSQL + PostGIS): Almacén transaccional en la nube con soporte nativo para coordenadas WGS84 (SRID 4326), tipos de datos JSONB para geometrías y extensión pgcrypto.")
 
-    doc.add_heading("2. CONTRATO DETALLADO DE LA API RESTFUL (/api/v1)", level=1)
+    doc.add_heading("2. MECANISMOS TÉCNICOS CRÍTICOS IMPLEMENTADOS", level=1)
+    add_p(doc, "A. Conexión SSL Segura y Bypass de `pg-connection-string`: Para evitar que el parámetro `?sslmode=require` de Neon sobreescriba las opciones TLS en Node.js, el servidor descompone la URL con el motor nativo `new URL()` inyectando `{ ssl: { require: true, rejectUnauthorized: false } }` directamente a Sequelize.")
+    add_p(doc, "B. Sincronización Topológica de Modelos: Las tablas relacionales se sincronizan en estricto orden de dependencias para garantizar la integridad referencial en PostgreSQL:")
+    add_p(doc, "   `Role` / `Department` / `ReportStatus` ➔ `User` / `Category` ➔ `Report` ➔ `ReportEvidence` / `ReportHistory` / `CitizenSupport` / `WorkOrder`.")
+    add_p(doc, "C. Enrutamiento Dual Universal: Express expone los endpoints tanto bajo el prefijo canónico `/api/v1` como directamente en la raíz `/`, garantizando interoperabilidad inmediata ante cualquier configuración de baseURL del cliente.")
+    add_p(doc, "D. Endpoints de Diagnóstico en Tiempo Real: `GET /health` y `GET /api/v1/health` ejecutan una verificación en vivo (`sequelize.authenticate()`) devolviendo el estado de salud de la base de datos en JSON.")
+
+    doc.add_heading("3. MATRIZ INTEGRAL DE ENDPOINTS DE LA API REST", level=1)
     add_custom_table(
         doc,
-        ["Método", "Endpoint", "Rol Requerido", "Descripción y Carga Útil"],
+        ["Método", "Ruta de Producción", "Rol Requerido", "Descripción y Payload"],
         [
-            ["GET", "/api/v1/health", "Público", "Diagnóstico de salud del servicio y compatibilidad municipal."],
-            ["POST", "/api/v1/auth/register", "Público", "Registro ciudadano. Body: { nombre, email, password, colonia, telefono }."],
-            ["POST", "/api/v1/auth/login", "Público", "Inicio de sesión. Body: { email, password }. Retorna: { token, user }."],
-            ["GET", "/api/v1/auth/me", "Autenticado", "Perfil del usuario asociado al token Bearer en cabecera."],
-            ["GET", "/api/v1/reportes", "Público", "Listado con filtros query: ?categoria_id=&estado_id=&prioridad=&search="],
-            ["POST", "/api/v1/reportes", "Público / Auth", "Creación de reporte (multipart/form-data con archivo 'evidencia' y campos GPS)."],
-            ["GET", "/api/v1/reportes/:id", "Público", "Detalle de incidencia por ID (UUID) o folio oficial (OAX-YYYY-XXXX)."],
-            ["GET", "/api/v1/reportes/gis/geojson", "Público", "Exportación GeoJSON FeatureCollection RFC 7946 para visores cartográficos."],
-            ["GET", "/api/v1/reportes/mis-reportes", "Ciudadano", "Historial de reportes del usuario en sesión con línea de tiempo."],
-            ["POST", "/api/v1/reportes/:id/apoyo", "Público / Auth", "Incrementa votos_apoyo y registra relación única de apoyo ciudadano."],
-            ["GET", "/api/v1/reportes/analitica", "Público / Admin", "KPIs de resolución, tiempo promedio en horas y top 5 colonias críticas."],
-            ["GET", "/api/v1/ordenes", "Admin, Operador", "Listado de todas las órdenes de trabajo emitidas en el municipio."],
-            ["GET", "/api/v1/ordenes/mis-ordenes", "Cuadrilla, Op, Admin", "Órdenes de trabajo asignadas a la cuadrilla autenticada."],
-            ["POST", "/api/v1/ordenes", "Admin, Operador", "Despacho de OT. Body: { reporte_id, cuadrilla_id, instrucciones, fecha_limite }."],
-            ["PATCH", "/api/v1/ordenes/:id/iniciar", "Cuadrilla, Op, Admin", "Transición a 'En Proceso' con registro de fecha y hora de inicio en campo."],
-            ["POST", "/api/v1/ordenes/:id/finalizar", "Cuadrilla, Op, Admin", "Cierre técnico con multipart/form-data: 'evidencia_resolucion' y 'observaciones'."],
-            ["PATCH", "/api/v1/ordenes/:id/aprobar", "Administrador", "Aprobación definitiva de cierre tras inspección visual antes/después."],
-            ["GET", "/api/v1/usuarios", "Administrador", "Directorio general de usuarios con filtros por rol."],
-            ["POST", "/api/v1/usuarios", "Administrador", "Creación de cuentas administrativas y operativas de cuadrilla."],
-            ["PATCH", "/api/v1/usuarios/:id/status", "Administrador", "Alternancia de estado activo / inactivo de un usuario."],
+            ["GET", "/health | /api/v1/health", "Público", "Diagnóstico del servidor y estado de la conexión a la base de datos."],
+            ["POST", "/auth/login | /api/v1/auth/login", "Público", "Autenticación de usuarios. Body: { email, password }. Retorna JWT."],
+            ["POST", "/auth/register | /api/v1/auth/register", "Público", "Registro de ciudadanos. Body: { nombre, email, password, colonia }."],
+            ["GET", "/auth/me | /api/v1/auth/me", "Autenticado", "Información del usuario descifrada a partir del token JWT."],
+            ["GET", "/catalogos/categorias", "Público", "Catálogo oficial de tipos de incidencia municipal con SLAs."],
+            ["GET", "/reportes | /api/v1/reportes", "Público", "Listado de incidencias con filtros de búsqueda, estado y categoría."],
+            ["POST", "/reportes | /api/v1/reportes", "Público / Auth", "Creación de reporte (multipart/form-data con foto y coordenadas GPS)."],
+            ["GET", "/reportes/gis/geojson", "Público", "Capa espacial GeoJSON FeatureCollection para visualizadores GIS."],
+            ["GET", "/reportes/analitica", "Admin / Público", "Métricas agregadas, porcentaje de resolución y colonias críticas."],
+            ["POST", "/reportes/:id/apoyo", "Público / Auth", "Registro del voto de apoyo ciudadano ('A mí también me afecta')."],
+            ["GET", "/ordenes | /api/v1/ordenes", "Admin, Operador", "Listado de todas las órdenes de trabajo activas e históricas."],
+            ["GET", "/ordenes/mis-ordenes", "Cuadrilla", "Bandeja de órdenes asignadas a la brigada operativa en sesión."],
+            ["POST", "/ordenes | /api/v1/ordenes", "Admin, Operador", "Despacho de OT: { reporte_id, cuadrilla_id, instrucciones, fecha_limite }."],
+            ["PATCH", "/ordenes/:id/iniciar", "Cuadrilla, Admin", "Marca la orden como 'En Proceso' con estampa de tiempo."],
+            ["POST", "/ordenes/:id/finalizar", "Cuadrilla, Admin", "Cierre técnico con fotografía obligatoria de resolución y bitácora."],
+            ["PATCH", "/ordenes/:id/aprobar", "Administrador", "Aprobación definitiva de cierre tras comparar fotos 'antes/después'."],
+            ["GET", "/usuarios | /api/v1/usuarios", "Administrador", "Directorio y gestión de cuentas de operadores y cuadrillas."],
         ],
-        [0.7, 1.8, 1.2, 2.8]
+        [0.7, 2.0, 1.2, 2.7]
     )
 
-    doc.add_heading("3. MODELOS SEQUELIZE Y ASOCIACIONES", level=1)
-    add_p(doc, "Las asociaciones entre entidades se configuran centralizadamente en `server/src/models/index.js`:")
-    add_p(doc, "- `Role.hasMany(User)` / `User.belongsTo(Role, { as: 'rol' })`")
-    add_p(doc, "- `Department.hasMany(User)` / `User.belongsTo(Department, { as: 'dependencia' })`")
-    add_p(doc, "- `Department.hasMany(Category)` / `Category.belongsTo(Department)`")
-    add_p(doc, "- `Category.hasMany(Report)` / `Report.belongsTo(Category, { as: 'categoria' })`")
-    add_p(doc, "- `ReportStatus.hasMany(Report)` / `Report.belongsTo(ReportStatus, { as: 'estado' })`")
-    add_p(doc, "- `User.hasMany(Report, { as: 'mis_reportes' })` / `Report.belongsTo(User, { as: 'ciudadano' })`")
-    add_p(doc, "- `Report.hasMany(ReportEvidence, { as: 'evidencias' })`")
-    add_p(doc, "- `Report.hasOne(WorkOrder, { as: 'ordenTrabajo' })` / `WorkOrder.belongsTo(Report)`")
-    add_p(doc, "- `User.hasMany(WorkOrder, { as: 'ordenes_asignadas' })` / `WorkOrder.belongsTo(User, { as: 'cuadrilla' })`")
+    doc.add_heading("4. MODELO DE SEGURIDAD Y ACCESO (RBAC)", level=1)
+    add_p(doc, "1. Hashing de Contraseñas: Algoritmo bcrypt con salt rounds = 10, ejecutado en hooks `beforeCreate` y `beforeUpdate`.")
+    add_p(doc, "2. Tokens JWT Stateless: Firmados digitalmente con expiración de 7 días, portando el rol institucional y el ID único del usuario.")
+    add_p(doc, "3. Middleware `authenticateJWT`: Extrae la cabecera `Authorization: Bearer <token>`, valida la firma y carga el usuario en `req.user`.")
+    add_p(doc, "4. Middleware `authorizeRoles`: Restringe el acceso evaluando el rol del usuario frente a la lista blanca de permisos del endpoint.")
+    add_p(doc, "5. Almacenamiento Seguro de Evidencias: Validación estricta de tipos MIME (`image/jpeg`, `image/png`, `image/webp`), sanitización de nombres de archivo y límite de 5MB por archivo.")
 
-    doc.add_heading("4. SEGURIDAD Y GESTIÓN DE SESIONES", level=1)
-    add_p(doc, "El flujo criptográfico opera de la siguiente forma:")
-    add_p(doc, "1. En el registro/modificación, el hook `beforeSave` de Sequelize ejecuta `bcrypt.hash(password, 10)` y almacena el hash en `password_hash`.")
-    add_p(doc, "2. En el inicio de sesión, `bcrypt.compare(password, user.password_hash)` valida la coincidencia matemática sin revelar el texto plano.")
-    add_p(doc, "3. Se emite un JWT Stateless firmado con `JWT_SECRET` que contiene `{ id, email, rol }`.")
-    add_p(doc, "4. En cada petición protegida, el middleware `authenticateJWT` valida la firma del token y carga la instancia del usuario activo en `req.user`.")
-    add_p(doc, "5. El middleware `authorizeRoles` evalúa si `req.user.rol.nombre` coincide con la lista de roles autorizados para el endpoint.")
-
-    doc.add_heading("5. PROCEDIMIENTOS DE MANTENIMIENTO Y BACKUPS", level=1)
-    add_p(doc, "1. Respaldo periódico de la base de datos PostgreSQL:\n```bash\npg_dump -U postgres -h localhost -d sigiu_db -F c -b -v -f backup_sigiu_$(date +%Y%m%d).dump\n```")
-    add_p(doc, "2. Restauración de un respaldo:\n```bash\npg_restore -U postgres -h localhost -d sigiu_db -v backup_sigiu_20261122.dump\n```")
-    add_p(doc, "3. Mantenimiento del directorio de subidas (`uploads/`):\nSe recomienda ejecutar un script mensual de auditoría para eliminar archivos temporales huérfanos que no cuenten con un registro asociado en la tabla `imagenes_reporte`.")
+    doc.add_heading("5. RESPALDOS Y RECUPERACIÓN ANTE DESASTRES", level=1)
+    add_p(doc, "1. Respaldo directo en la nube mediante `pg_dump` con SSL:\n```bash\npg_dump \"postgresql://user:pass@ep-xyz.us-east-2.aws.neon.tech/neondb?sslmode=require\" -F c -b -v -f backup_cloud_sigiu.dump\n```")
+    add_p(doc, "2. Restauración rápida:\n```bash\npg_restore -d \"postgresql://user:pass@ep-xyz.us-east-2.aws.neon.tech/neondb?sslmode=require\" -v backup_cloud_sigiu.dump\n```")
 
     doc_path = os.path.join(DOC_DIR, "manual_tecnico_SIGIU.docx")
     doc.save(doc_path)
@@ -374,4 +388,4 @@ if __name__ == "__main__":
     generate_user_manual()
     generate_install_manual()
     generate_technical_manual()
-    print("Todos los manuales complementarios generados con éxito.")
+    print("Todos los manuales complementarios actualizados con éxito.")

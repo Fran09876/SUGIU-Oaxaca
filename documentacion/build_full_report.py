@@ -294,13 +294,14 @@ def create_sigiu_report():
         ("   3.7. Coordenadas Espaciales WGS84 y Formato GeoJSON", "38"),
         ("   3.8. Sistemas de Información Geográfica y Leaflet", "40"),
         ("   3.9. Seguridad Web, Autenticación JWT y Cifrado Criptográfico", "42"),
-        ("CAPÍTULO IV. DESARROLLO DEL PROYECTO (ITERACIONES XP 0 A 5)", "45"),
+        ("CAPÍTULO IV. DESARROLLO DEL PROYECTO (ITERACIONES XP 0 A 6)", "45"),
         ("   4.1. Iteración Cero: Planificación, Entorno y Base de Datos", "45"),
         ("   4.2. Iteración Uno: Arquitectura Base y Modelado", "53"),
         ("   4.3. Iteración Dos: Módulo Ciudadano, GPS y Evidencia Fotográfica", "62"),
         ("   4.4. Iteración Tres: Panel de Despacho y Órdenes de Trabajo", "72"),
         ("   4.5. Iteración Cuatro: Integración GIS y Rendición de Cuentas", "82"),
         ("   4.6. Iteración Cinco: App Web para Cuadrillas y Cierre Técnico", "93"),
+        ("   4.7. Iteración Seis: Despliegue en Entorno de Producción Cloud y Puesta en Marcha", "102"),
         ("CAPÍTULO V. PRUEBAS Y VALIDACIÓN DEL SISTEMA", "105"),
         ("   5.1. Estrategia Global de Pruebas", "105"),
         ("   5.2. Matriz de Casos de Prueba Ejecutados", "107"),
@@ -547,6 +548,7 @@ def create_sigiu_report():
             ["Iteración 3", "Panel Operador, Despacho, Órdenes de Trabajo, Catálogos", "Semanas 10 a 12 (Oct)", "HU-08, HU-09"],
             ["Iteración 4", "Visor GIS Leaflet, Muro Comunitario, Trazabilidad, Analítica", "Semanas 13 a 14 (Nov)", "HU-10, HU-11"],
             ["Iteración 5", "Módulo de Cuadrilla en Campo, Cierre con Foto Resolución", "Semanas 15 a 16 (Nov - Dic)", "HU-12, HU-13"],
+            ["Iteración 6", "Despliegue en Producción Cloud (Neon + Render + Vercel) y Puesta en Marcha", "Semanas 17 a 18 (Nov - Dic)", "HU-14"],
         ],
         [1.2, 2.5, 1.4, 1.4]
     )
@@ -818,6 +820,34 @@ def create_sigiu_report():
     add_p("4.6.22. Retrospectiva: La inclusión de la bitácora técnica elevó la utilidad de la plataforma al documentar los metros cuadrados de asfalto o piezas de luminaria utilizadas.")
     add_p("4.6.23. Conclusión de la Iteración: El sistema completó el ciclo integral de desarrollo con todas sus historias de usuario operativas y validadas.")
 
+    # --------------------------------------------------------------------------
+    # ITERACIÓN SEIS
+    # --------------------------------------------------------------------------
+    add_h2("4.7. Iteración Seis: Despliegue en Entorno de Producción Cloud y Puesta en Marcha")
+    add_p("4.7.1. Introducción: Concluida la programación de los módulos funcionales, la Iteración 6 abordó la transición de la plataforma desde el entorno de desarrollo local hacia una infraestructura de nube pública de alta disponibilidad, operando bajo un esquema 100% gratuito.")
+    add_p("4.7.2. Objetivo de la Iteración: Desplegar el sistema SIGIU en producción utilizando una arquitectura desacoplada basada en Neon (PostgreSQL + PostGIS), Render (API REST Node.js) y Vercel (Frontend React), garantizando acceso universal a los ciudadanos sin requerir instalación de software local.")
+    add_p("4.7.3. Alcance: Preparación de variables de entorno para nube (DATABASE_URL, JWT_SECRET, CLIENT_URL, VITE_API_URL), soporte SSL/TLS estricto con bypass de pg-connection-string, script consolidado deploy_init.sql, enrutamiento SPA con vercel.json, sincronización topológica de modelos, y montaje dual de rutas (/api/v1 y /).")
+    add_p("4.7.4. Historias de Usuario: HU-14 (Despliegue y Puesta en Marcha en la Nube).")
+    add_p("4.7.5. Requisitos Relacionados: RF-19 (Acceso universal web sin instalación), RNF-01 (Disponibilidad en la nube pública), RNF-02 (Cifrado TLS en tránsito y en reposo).")
+    add_p("4.7.6. Criterios de Aceptación: El frontend debe ser accesible públicamente mediante HTTPS en https://sugiu-oaxaca.vercel.app/; el backend debe autenticar contra la base de datos remota con SSL activo; el inicio de sesión debe responder en menos de 500ms; las evidencias fotográficas deben visualizarse correctamente desde el dominio cloud.")
+    add_p("4.7.7. Planificación: Semanas 17 y 18 (Noviembre 2026).")
+    add_p("4.7.8. Diseño: Arquitectura Cloud de 3 capas: Vercel CDN (Frontend) + Render Web Service (Backend REST) + Neon Serverless (PostgreSQL/PostGIS).")
+    add_p("4.7.9. Diagramas: Topología de despliegue en la nube e interacción HTTPS entre los tres proveedores cloud.")
+    add_p("4.7.10. Modelo de Datos: Base de datos relacional PostgreSQL 16 alojada en Neon (AWS us-east-2) con extensión espacial PostGIS 3.6 activa (SELECT PostGIS_Version();) y tablas sincronizadas en orden topológico.")
+    add_p("4.7.11. Implementación: Descomposición de URL en database.js con new URL(), exportación de getFullImageUrl() en client.js, configuración de vercel.json con rewrites hacia /index.html, y doble montaje en app.js (app.use('/api/v1', routes); app.use('/', routes);).")
+    add_p("4.7.12. Explicación de Componentes: Integración continua (CI/CD) vinculada al repositorio https://github.com/Fran09876/SUGIU-Oaxaca, disparando compilaciones automáticas ante cada commit en la rama main.")
+    add_p("4.7.13. Explicación de Endpoints: GET /health y GET /api/v1/health retornando estado de salud de la base de datos en tiempo real; /auth/login y /catalogos/categorias atendidos en ambas rutas.")
+    add_p("4.7.14. Validaciones: Sanitización de comillas en variables de entorno y validación de certificados SSL con rejectUnauthorized: false para intermediarios serverless.")
+    add_p("4.7.15. Seguridad: Cifrado HTTPS en tránsito en todos los dominios, contraseñas protegidas con bcrypt y aislamiento de variables sensibles fuera del código fuente.")
+    add_p("4.7.16. Casos de Prueba: Autenticación de administradores y cuadrillas en el entorno productivo real, despacho de órdenes de trabajo en la nube y consulta cartográfica de reportes en vivo.")
+    add_p("4.7.17. Resultados: Conexión confirmada en logs de Render: 'Conectado exitosamente a PostgreSQL (ep-falling-glade-...neon.tech/unispace_db) [SSL Activo]' y 'Extensión espacial activa: postgis 3.6'.")
+    add_p("4.7.18. Evidencias: Plataforma en línea operativa en https://sugiu-oaxaca.vercel.app/ e inicio de sesión funcional con admin@oaxaca.gob.mx y contraseña JOse2002.")
+    add_p("4.7.19. Problemas Encontrados: Conflicto en pg-connection-string que sobreescribía ssl: {} anulando rejectUnauthorized: false; error 404 al llamar /auth/login por omisión del prefijo /api/v1 en el cliente; y error de dependencias de claves foráneas en la sincronización desordenada de Sequelize en PostgreSQL.")
+    add_p("4.7.20. Soluciones Aplicadas: Parseo manual de URL descomponiendo host, puerto y credenciales; montaje simultáneo de rutas en la raíz y en /api/v1; y ordenamiento topológico estricto en la sincronización de modelos con fallback automático a deploy_init.sql.")
+    add_p("4.7.21. Limitaciones: El plan gratuito de Render suspende el contenedor tras 15 minutos de inactividad, provocando una latencia de arranque en frío (cold start) de aproximadamente 30 a 50 segundos en la primera petición.")
+    add_p("4.7.22. Retrospectiva: La automatización DevOps mediante Git y plataformas PaaS permitió entregar una solución completamente funcional en la nube sin costo financiero para el municipio.")
+    add_p("4.7.23. Conclusión de la Iteración: SIGIU alcanzó la madurez operativa requerida para una solución gubernamental, quedando a disposición de la ciudadanía y del Ayuntamiento de Oaxaca de Juárez sin necesidad de instalar software alguno.")
+
     # ==============================================================================
     # CAPÍTULO V. PRUEBAS Y VALIDACIÓN DEL SISTEMA
     # ==============================================================================
@@ -883,12 +913,13 @@ def create_sigiu_report():
             ["Obj 4: Despacho y Órdenes", "Consola del operador y emisión de órdenes OT-2026-XXXX", "100% (Completado)", "OperatorDashboard y controlador workOrderController operativos"],
             ["Obj 5: App Cuadrilla y Cierre", "Interfaz web adaptable de campo y foto de resolución obligatoria", "100% (Completado)", "CrewMobileView y modal de conclusión con validación Multer"],
             ["Obj 6: Analítica y Rendición", "KPIs de resolución y comparador antes/después", "100% (Completado)", "Pestaña de analítica en AdminDashboard y endpoint /analitica verificado"],
+            ["Obj 7: Despliegue Cloud", "Puesta en marcha en la nube (Vercel + Render + Neon PostGIS)", "100% (Completado)", "Plataforma accesible públicamente en https://sugiu-oaxaca.vercel.app/"],
         ],
         [1.8, 1.8, 1.2, 2.0]
     )
 
     add_h2("6.2. Cumplimiento de Historias de Usuario")
-    add_p("El proyecto cubrió satisfactoriamente las 13 historias de usuario formuladas a lo largo de las iteraciones XP (Tabla 6.2):")
+    add_p("El proyecto cubrió satisfactoriamente las 14 historias de usuario formuladas a lo largo de las iteraciones XP (Tabla 6.2):")
 
     create_custom_table(
         ["Código HU", "Título de la Historia de Usuario", "Rol Beneficiario", "Iteración", "Estado"],
@@ -906,13 +937,14 @@ def create_sigiu_report():
             ["HU-11", "Rendición de Cuentas y Analítica Pública", "Administrador", "Iteración 4", "Implementada y Verificada"],
             ["HU-12", "Módulo de Cuadrilla y Ruta en Campo", "Cuadrilla", "Iteración 5", "Implementada y Verificada"],
             ["HU-13", "Cierre Técnico con Evidencia de Resolución", "Cuadrilla / Admin", "Iteración 5", "Implementada y Verificada"],
+            ["HU-14", "Despliegue y Puesta en Marcha en la Nube", "Todos los roles", "Iteración 6", "Implementada y Verificada"],
         ],
         [0.8, 2.6, 1.3, 0.9, 1.2]
     )
 
     add_h2("6.3. Comparación entre Alcance Planeado y Logrado")
-    add_p("El alcance inicialmente planificado en la propuesta contemplaba cubrir únicamente las Iteraciones 0, 1 y 2 (hasta la captura ciudadana y autenticación). Sin embargo, gracias a la disciplina de refactorización y modularidad arquitectónica de Extreme Programming, fue posible extender el desarrollo hasta culminar las Iteraciones 3, 4 y 5, integrando los módulos operativos de campo y despacho.")
-    add_p("Por otra parte, se reconoce con honestidad que ciertas capacidades complementarias que inicialmente se vislumbraban a nivel conceptual (como la instalación PWA sin conexión con Service Workers, las notificaciones push nativas y el almacenamiento en servicios en la nube como S3) no formaron parte del software entregado en esta etapa.")
+    add_p("El alcance inicialmente planificado en la propuesta contemplaba cubrir únicamente las Iteraciones 0, 1 y 2 (hasta la captura ciudadana y autenticación). Sin embargo, gracias a la disciplina de refactorización y modularidad arquitectónica de Extreme Programming, fue posible extender el desarrollo hasta culminar las Iteraciones 3, 4, 5 y 6, integrando no solo los módulos operativos de campo y despacho, sino también el despliegue en entorno de producción cloud en alta disponibilidad.")
+    add_p("El sistema se encuentra operando activamente en la nube pública mediante una arquitectura desacoplada gratuita de nivel profesional: la base de datos espacial PostgreSQL 16 con PostGIS en Neon Serverless, la API RESTful en Render Web Service y la aplicación web responsiva en Vercel CDN bajo el dominio oficial https://sugiu-oaxaca.vercel.app/.")
 
     add_h2("6.4. Discusión Crítica de Hallazgos y Limitaciones")
     add_p("La evaluación integral demostró que la separación estricta de roles mediante RBAC y la estandarización de coordenadas sobre WGS84 resolvieron de raíz la falta de precisión geográfica de los sistemas telefónicos tradicionales. No obstante, se identificaron áreas de oportunidad técnicas: el almacenamiento en disco local de fotos representa un cuello de botella si el sistema escala a miles de reportes mensuales; de igual manera, el uso de JavaScript sin tipado estático requirió pruebas exhaustivas para validar que las cargas útiles JSON cumplieran los contratos esperados.")
@@ -930,6 +962,7 @@ def create_sigiu_report():
     add_p("2. El mecanismo de apoyo ciudadano ('A mí también me afecta') resuelve la duplicidad de denuncias sobre un mismo bache o fuga y proporciona al municipio un indicador cuantitativo democrático para priorizar obras de mayor impacto colectivo.")
     add_p("3. La exigencia ineludible de cargar una fotografía de resolución para cerrar una Orden de Trabajo (HU-13) garantiza la transparencia pública, habilitando un comparador visual ('Antes vs Después') que fortalece la rendición de cuentas.")
     add_p("4. La arquitectura desacoplada basada en React 19, Express y PostgreSQL demostró ser altamente eficiente, manteniendo tiempos de respuesta inferiores a 100 milisegundos en la API REST y compilaciones de producción de alta velocidad con Vite.")
+    add_p("5. El despliegue integral en la nube (Vercel para la SPA, Render para el backend REST y Neon para la base de datos PostgreSQL con PostGIS) demostró la viabilidad de implementar plataformas gubernamentales de alto impacto con costos de infraestructura cero, garantizando acceso universal a los ciudadanos sin requerir instalación de software local a través de la URL oficial https://sugiu-oaxaca.vercel.app/.")
 
     add_h2("7.2. Aprendizajes Técnicos y Metodológicos")
     add_p("El proyecto permitió consolidar el entendimiento práctico de la metodología Extreme Programming (XP). Se constató que, aún en proyectos con desarrollo individual, prácticas como las entregas pequeñas e iterativas, el diseño simple y las pruebas automatizadas de integración previenen la acumulación de deuda técnica y permiten adaptarse a cambios en los requisitos sin comprometer la estabilidad del sistema.")

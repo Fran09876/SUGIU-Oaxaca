@@ -29,9 +29,9 @@
 - **Diagnóstico:** Robusto y adecuadamente desacoplado de la lógica de presentación.
 
 ### 1.4. Seguridad en Entrada y CORS
-- **CORS:** Configurado en `server/src/app.js` con `origin: '*'`. En producción, esto permitiría que cualquier sitio web efectúe peticiones hacia la API.
-- **Recomendación:** Restringir el origen en producción a los dominios autorizados mediante `process.env.CLIENT_URL`.
+- **CORS:** Configurado dinámicamente en `server/src/app.js` permitiendo el dominio de producción en Vercel (`https://sugiu-oaxaca.vercel.app`), subdominios `*.vercel.app`, `process.env.CLIENT_URL` y localhost para pruebas locales.
 - **Límites de Payload:** Se define un límite de 10 MB para cuerpos JSON en Express (`express.json({ limit: '10mb' })`).
+- **SSL / TLS:** Habilitado de forma obligatoria en la comunicación hacia la base de datos PostgreSQL en Neon con `rejectUnauthorized: false` para tolerar certificados intermedios dinámicos de infraestructura serverless.
 
 ---
 
@@ -126,3 +126,19 @@
 | **Saturación por solicitudes concurrentes sin caché** | Media | Medio | Implementar almacenamiento en caché con Redis para catálogos y estadísticas frecuentes. |
 | **Exposición de token JWT en localStorage** | Media | Alto | Migrar a cookies `HttpOnly` y añadir encabezados de seguridad con Helmet (`Content-Security-Policy`). |
 | **Inconsistencias por falta de tipado estático** | Media | Bajo | Migrar gradualmente los modelos y servicios a TypeScript. |
+
+---
+
+## 8. Evaluación del Despliegue en Producción Cloud (Iteración 6)
+
+- **URL Pública Oficial:** `https://sugiu-oaxaca.vercel.app/`
+- **Frontend SPA:** Alojado en **Vercel** con integración continua desde GitHub (`https://github.com/Fran09876/SUGIU-Oaxaca`), reescrituras de rutas SPA en `vercel.json` y compresión Brotli/Gzip.
+- **Backend API REST:** Desplegado en **Render** (Node.js 20 Web Service) con variables de entorno de producción, auto-deploy en branch `main`, y enrutamiento dual para endpoints tanto bajo `/api/v1` como directamente en la raíz `/`.
+- **Base de Datos:** Alojada en **Neon Serverless** (PostgreSQL 16 en AWS us-east-2) con extensión espacial PostGIS 3.6 habilitada, pooling de conexiones y cifrado SSL TLS en tránsito.
+- **Modelo de Acceso:** Acceso universal inmediato para cualquier usuario con navegador web y cámara (para toma de evidencias in-situ), sin requerir instalación de software local.
+- **Credenciales Preconfiguradas:**
+  - Admin: `admin@oaxaca.gob.mx` | `JOse2002`
+  - Operador: `operador@oaxaca.gob.mx` | `JOse2002`
+  - Cuadrilla 01: `cuadrilla@oaxaca.gob.mx` | `JOse2002`
+  - Cuadrilla 02: `cuadrilla2@oaxaca.gob.mx` | `JOse2002`
+  - Ciudadano: `ciudadano@oaxaca.gob.mx` | `JOse2002`
